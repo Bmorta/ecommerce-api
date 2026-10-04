@@ -33,6 +33,10 @@
       <nav class="main-nav" aria-label="Main navigation">
         <a href="#products">Products</a>
         <a href="#featured">Featured</a>
+        <button class="manage-button" id="manageProductsButton" type="button">
+          <i class="fa-solid fa-boxes-stacked"></i>
+          Manage Products
+        </button>
       </nav>
 
       <button class="cart-button" id="cartButton" type="button" aria-label="Open cart">
@@ -159,6 +163,95 @@
       <i class="fa-solid fa-xmark"></i>
     </button>
     <div id="dialogContent"></div>
+  </dialog>
+
+  <dialog class="manage-dialog" id="manageDialog">
+    <div class="manage-header">
+      <div>
+        <span class="eyebrow">ADMIN PRODUCT TOOLS</span>
+        <h2>Manage products</h2>
+        <p>Add, update, or delete products using your existing REST API.</p>
+      </div>
+      <button
+        class="dialog-close"
+        id="closeManageButton"
+        type="button"
+        aria-label="Close product management"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="manage-toolbar">
+      <div>
+        <strong id="manageSummary">0 products</strong>
+        <span>in your catalog</span>
+      </div>
+      <button class="primary-button" id="openAddProductButton" type="button">
+        <i class="fa-solid fa-plus"></i>
+        Add Product
+      </button>
+    </div>
+
+    <div id="manageProductList" class="manage-product-list"></div>
+  </dialog>
+
+  <dialog class="form-dialog" id="productFormDialog">
+    <form id="productForm" class="product-form">
+      <div class="form-header">
+        <div>
+          <span class="eyebrow" id="formEyebrow">NEW PRODUCT</span>
+          <h2 id="productFormTitle">Add product</h2>
+        </div>
+        <button
+          class="dialog-close"
+          id="closeProductFormButton"
+          type="button"
+          aria-label="Close product form"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="productId" />
+
+      <div class="form-grid">
+        <label class="form-field full-width">
+          <span>Product name</span>
+          <input id="productName" type="text" required />
+        </label>
+
+        <label class="form-field full-width">
+          <span>Description</span>
+          <textarea id="productDescription" rows="4" required></textarea>
+        </label>
+
+        <label class="form-field">
+          <span>Price</span>
+          <input id="productPrice" type="number" min="0" step="0.01" required />
+        </label>
+
+        <label class="form-field">
+          <span>Stock</span>
+          <input id="productStock" type="number" min="0" step="1" required />
+        </label>
+
+        <label class="form-field full-width">
+          <span>Category</span>
+          <input id="productCategory" type="text" required />
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button class="secondary-button" id="cancelProductFormButton" type="button">
+          Cancel
+        </button>
+        <button class="primary-button" type="submit">
+          <i class="fa-solid fa-check"></i>
+          <span id="saveProductText">Save Product</span>
+        </button>
+      </div>
+    </form>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
