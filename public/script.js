@@ -43,11 +43,23 @@ const productPrice = document.getElementById("productPrice");
 const productStock = document.getElementById("productStock");
 const productCategory = document.getElementById("productCategory");
 const saveProductText = document.getElementById("saveProductText");
+const productFormError = document.getElementById("productFormError");
+const feedbackDialog = document.getElementById("feedbackDialog");
+const feedbackIcon = document.getElementById("feedbackIcon");
+const feedbackTitle = document.getElementById("feedbackTitle");
+const feedbackMessage = document.getElementById("feedbackMessage");
+const feedbackCloseButton = document.getElementById("feedbackCloseButton");
+const confirmDialog = document.getElementById("confirmDialog");
+const confirmMessage = document.getElementById("confirmMessage");
+const confirmCancelButton = document.getElementById("confirmCancelButton");
+const confirmDeleteButton = document.getElementById("confirmDeleteButton");
 const menuToggle = document.getElementById("menuToggle");
 const mobileMenu = document.getElementById("mobileMenu");
 const mobileManageProductsButton = document.getElementById(
   "mobileManageProductsButton"
 );
+
+let pendingDeleteId = null;
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -84,6 +96,21 @@ function bindEvents() {
   closeProductFormButton.addEventListener("click", closeProductForm);
   cancelProductFormButton.addEventListener("click", closeProductForm);
   productForm.addEventListener("submit", handleProductFormSubmit);
+
+  feedbackCloseButton.addEventListener("click", closeFeedbackDialog);
+  feedbackDialog.addEventListener("click", (event) => {
+    if (event.target === feedbackDialog) {
+      closeFeedbackDialog();
+    }
+  });
+
+  confirmCancelButton.addEventListener("click", closeConfirmDialog);
+  confirmDeleteButton.addEventListener("click", confirmDeleteProduct);
+  confirmDialog.addEventListener("click", (event) => {
+    if (event.target === confirmDialog) {
+      closeConfirmDialog();
+    }
+  });
 
   manageDialog.addEventListener("click", (event) => {
     if (event.target === manageDialog) {
@@ -467,10 +494,14 @@ function closeCart() {
 
 function handleCheckout() {
   if (!state.cart.length) {
+    showFeedback("Your cart is empty.", "Add a product to your cart before checking out.");
     return;
   }
 
-  showToast("Checkout is a demo feature for this capstone.");
+  showFeedback(
+    "Checkout is ready for the next step.",
+    "This is currently a demo checkout for Capstone 2."
+  );
 }
 
 function loadCart() {
@@ -486,6 +517,18 @@ function loadCart() {
 
 function saveCart() {
   localStorage.setItem("shopease-cart", JSON.stringify(state.cart));
+}
+
+function getProductImage(product) {
+  if (
+    product &&
+    typeof product.imageUrl === "string" &&
+    product.imageUrl.trim()
+  ) {
+    return product.imageUrl.trim();
+  }
+
+  return "";
 }
 
 function formatCurrency(value) {
@@ -536,6 +579,66 @@ function showToast(message) {
   toastTimer = window.setTimeout(() => {
     toast.classList.remove("visible");
   }, 2200);
+}
+
+function showFeedback(title, message, type = "info") {
+  feedbackTitle.textContent = title;
+  feedbackMessage.textContent = message;
+
+  feedbackIcon.innerHTML = type === "success"
+    ? '<i class="fa-solid fa-circle-check"></i>'
+    : '<i class="fa-solid fa-circle-info"></i>';
+
+  feedbackIcon.classList.toggle("success-feedback-icon", type === "success");
+
+  if (typeof feedbackDialog.showModal === "function") {
+    feedbackDialog.showModal();
+  } else {
+    feedbackDialog.setAttribute("open", "");
+  }
+}
+
+function closeFeedbackDialog() {
+  if (typeof feedbackDialog.close === "function" && feedbackDialog.open) {
+    feedbackDialog.close();
+  } else {
+    feedbackDialog.removeAttribute("open");
+  }
+
+  feedbackIcon.classList.remove("success-feedback-icon");
+}
+
+function showConfirmDelete(product) {
+  pendingDeleteId = product._id;
+  confirmMessage.textContent =
+    `Are you sure you want to delete "${product.name}"? This action cannot be undone.`;
+
+  if (typeof confirmDialog.showModal === "function") {
+    confirmDialog.showModal();
+  } else {
+    confirmDialog.setAttribute("open", "");
+  }
+}
+
+function closeConfirmDialog() {
+  pendingDeleteId = null;
+
+  if (typeof confirmDialog.close === "function" && confirmDialog.open) {
+    confirmDialog.close();
+  } else {
+    confirmDialog.removeAttribute("open");
+  }
+}
+
+async function confirmDeleteProduct() {
+  if (!pendingDeleteId) {
+    closeConfirmDialog();
+    return;
+  }
+
+  const id = pendingDeleteId;
+  closeConfirmDialog();
+  await performDeleteProduct(id);
 }
 
 
@@ -618,6 +721,7 @@ function renderManageProducts() {
 
 function openAddProductForm() {
   productForm.reset();
+  clearProductFormError();
   productId.value = "";
   formEyebrow.textContent = "NEW PRODUCT";
   productFormTitle.textContent = "Add product";
@@ -626,6 +730,8 @@ function openAddProductForm() {
 }
 
 function openEditProductForm(id) {
+  clearProductFormError();
+
   const product = state.products.find((item) => item._id === id);
 
   if (!product) {
@@ -665,6 +771,7 @@ function closeProductForm() {
 
 async function handleProductFormSubmit(event) {
   event.preventDefault();
+  clearProductFormError();
 
   const id = productId.value.trim();
   const payload = {
@@ -675,16 +782,10 @@ async function handleProductFormSubmit(event) {
     stock: Number(productStock.value)
   };
 
-  if (
-    !payload.name ||
-    !payload.description ||
-    !payload.category ||
-    Number.isNaN(payload.price) ||
-    Number.isNaN(payload.stock) ||
-    payload.price < 0 ||
-    payload.stock < 0
-  ) {
-    showToast("Please complete all product fields correctly.");
+  const validationError = validateProductPayload(payload);
+
+  if (validationError) {
+    showProductFormError(validationError);
     return;
   }
 
@@ -713,8 +814,42 @@ async function handleProductFormSubmit(event) {
     renderManageProducts();
     showToast(isUpdate ? "Product updated successfully." : "Product added successfully.");
   } catch (error) {
-    showToast(error.message || "Unable to save product.");
+    showProductFormError(error.message || "Unable to save product.");
   }
+}
+
+function validateProductPayload(payload) {
+  if (!payload.name) {
+    return "Product name is required.";
+  }
+
+  if (!payload.description) {
+    return "Product description is required.";
+  }
+
+  if (!payload.category) {
+    return "Product category is required.";
+  }
+
+  if (!Number.isFinite(payload.price) || payload.price < 0) {
+    return "Enter a valid price that is 0 or greater.";
+  }
+
+  if (!Number.isInteger(payload.stock) || payload.stock < 0) {
+    return "Enter a valid whole-number stock quantity that is 0 or greater.";
+  }
+
+  return "";
+}
+
+function showProductFormError(message) {
+  productFormError.textContent = message;
+  productFormError.hidden = false;
+}
+
+function clearProductFormError() {
+  productFormError.textContent = "";
+  productFormError.hidden = true;
 }
 
 async function deleteProduct(id) {
@@ -724,14 +859,10 @@ async function deleteProduct(id) {
     return;
   }
 
-  const confirmed = window.confirm(
-    `Delete "${product.name}"? This action cannot be undone.`
-  );
+  showConfirmDelete(product);
+}
 
-  if (!confirmed) {
-    return;
-  }
-
+async function performDeleteProduct(id) {
   try {
     const response = await fetch(
       `${API_BASE}/${encodeURIComponent(id)}`,
@@ -752,9 +883,9 @@ async function deleteProduct(id) {
     await loadProducts();
     renderManageProducts();
     renderCart();
-    showToast("Product deleted successfully.");
+    showFeedback("Product deleted", "The product was successfully removed.", "success");
   } catch (error) {
-    showToast(error.message || "Unable to delete product.");
+    showFeedback("Unable to delete product", error.message || "Please try again.");
   }
 }
 
