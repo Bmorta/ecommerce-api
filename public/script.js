@@ -195,11 +195,6 @@ function createProductCard(product) {
 
   return `
     <article class="product-card">
-      <div class="product-image product-image-placeholder" aria-label="Product image coming soon">
-        <i class="fa-regular fa-image"></i>
-        <span>Image coming soon</span>
-      </div>
-
       <div class="product-body">
         <span class="product-category">${escapeHtml(product.category || "General")}</span>
         <h3 class="product-name">${escapeHtml(product.name || "Unnamed product")}</h3>
@@ -248,11 +243,6 @@ function openProductDialog(productId) {
 
   dialogContent.innerHTML = `
     <div class="dialog-layout">
-      <div class="dialog-image dialog-image-placeholder" aria-label="Product image coming soon">
-        <i class="fa-regular fa-image"></i>
-        <span>Image coming soon</span>
-      </div>
-
       <div class="dialog-info">
         <span class="product-category">${escapeHtml(product.category || "General")}</span>
         <h2>${escapeHtml(product.name || "Unnamed product")}</h2>
@@ -407,20 +397,8 @@ function renderCart() {
 }
 
 function createCartItem(item) {
-  const cartImage = item.imageUrl
-    ? `<img
-        class="cart-item-image"
-        src="${escapeAttribute(item.imageUrl)}"
-        alt="${escapeAttribute(item.name || "Product")}"
-      />`
-    : `<div class="cart-item-image cart-item-image-placeholder" aria-label="Product image coming soon">
-        <i class="fa-regular fa-image"></i>
-      </div>`;
-
   return `
     <div class="cart-item">
-      ${cartImage}
-
       <div class="cart-item-info">
         <strong>${escapeHtml(item.name || "Unnamed product")}</strong>
         <div class="cart-item-price">${formatCurrency(item.price)} each</div>
