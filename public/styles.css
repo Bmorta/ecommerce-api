@@ -386,6 +386,39 @@ a {
   background: var(--surface-soft);
 }
 
+.product-image-placeholder,
+.dialog-image-placeholder,
+.cart-item-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.product-image-placeholder i {
+  font-size: 2rem;
+}
+
+.product-image-placeholder span {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.dialog-image-placeholder {
+  min-height: 440px;
+  background: var(--surface-soft);
+}
+
+.dialog-image-placeholder i {
+  font-size: 3rem;
+}
+
+.cart-item-image-placeholder {
+  font-size: 1.15rem;
+}
+
 .product-body {
   padding: 15px 5px 7px;
 }
