@@ -43,6 +43,11 @@ const productPrice = document.getElementById("productPrice");
 const productStock = document.getElementById("productStock");
 const productCategory = document.getElementById("productCategory");
 const saveProductText = document.getElementById("saveProductText");
+const menuToggle = document.getElementById("menuToggle");
+const mobileMenu = document.getElementById("mobileMenu");
+const mobileManageProductsButton = document.getElementById(
+  "mobileManageProductsButton"
+);
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -90,6 +95,17 @@ function bindEvents() {
     if (event.target === productFormDialog) {
       closeProductForm();
     }
+  });
+
+  menuToggle.addEventListener("click", toggleMobileMenu);
+
+  mobileMenu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", closeMobileMenu);
+  });
+
+  mobileManageProductsButton.addEventListener("click", () => {
+    closeMobileMenu();
+    openManageProducts();
   });
 }
 
@@ -740,4 +756,23 @@ async function deleteProduct(id) {
   } catch (error) {
     showToast(error.message || "Unable to delete product.");
   }
+}
+
+
+function toggleMobileMenu() {
+  const isOpen = mobileMenu.classList.toggle("open");
+
+  menuToggle.setAttribute("aria-expanded", String(isOpen));
+  mobileMenu.setAttribute("aria-hidden", String(!isOpen));
+
+  menuToggle.innerHTML = isOpen
+    ? '<i class="fa-solid fa-xmark"></i>'
+    : '<i class="fa-solid fa-bars"></i>';
+}
+
+function closeMobileMenu() {
+  mobileMenu.classList.remove("open");
+  menuToggle.setAttribute("aria-expanded", "false");
+  mobileMenu.setAttribute("aria-hidden", "true");
+  menuToggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
 }
