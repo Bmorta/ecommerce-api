@@ -1,7 +1,4 @@
 const API_BASE = "/api/products";
-const FALLBACK_IMAGE =
-  "https://placehold.co/800x650/f0f2f7/171922?text=Product";
-
 const state = {
   products: [],
   filteredProducts: [],
@@ -161,13 +158,10 @@ function createProductCard(product) {
 
   return `
     <article class="product-card">
-      <img
-        class="product-image"
-        src="${escapeAttribute(image)}"
-        alt="${escapeAttribute(product.name || "Product")}"
-        loading="lazy"
-        onerror="this.src='${FALLBACK_IMAGE}'"
-      />
+      <div class="product-image product-image-placeholder" aria-label="Product image coming soon">
+        <i class="fa-regular fa-image"></i>
+        <span>Image coming soon</span>
+      </div>
 
       <div class="product-body">
         <span class="product-category">${escapeHtml(product.category || "General")}</span>
@@ -218,12 +212,10 @@ function openProductDialog(productId) {
 
   dialogContent.innerHTML = `
     <div class="dialog-layout">
-      <img
-        class="dialog-image"
-        src="${escapeAttribute(image)}"
-        alt="${escapeAttribute(product.name || "Product")}"
-        onerror="this.src='${FALLBACK_IMAGE}'"
-      />
+      <div class="dialog-image dialog-image-placeholder" aria-label="Product image coming soon">
+        <i class="fa-regular fa-image"></i>
+        <span>Image coming soon</span>
+      </div>
 
       <div class="dialog-info">
         <span class="product-category">${escapeHtml(product.category || "General")}</span>
@@ -379,14 +371,19 @@ function renderCart() {
 }
 
 function createCartItem(item) {
+  const cartImage = item.imageUrl
+    ? `<img
+        class="cart-item-image"
+        src="${escapeAttribute(item.imageUrl)}"
+        alt="${escapeAttribute(item.name || "Product")}"
+      />`
+    : `<div class="cart-item-image cart-item-image-placeholder" aria-label="Product image coming soon">
+        <i class="fa-regular fa-image"></i>
+      </div>`;
+
   return `
     <div class="cart-item">
-      <img
-        class="cart-item-image"
-        src="${escapeAttribute(item.imageUrl || FALLBACK_IMAGE)}"
-        alt="${escapeAttribute(item.name || "Product")}"
-        onerror="this.src='${FALLBACK_IMAGE}'"
-      />
+      ${cartImage}
 
       <div class="cart-item-info">
         <strong>${escapeHtml(item.name || "Unnamed product")}</strong>
@@ -470,7 +467,7 @@ function getProductImage(product) {
     return product.imageUrl.trim();
   }
 
-  return FALLBACK_IMAGE;
+  return "";
 }
 
 function formatCurrency(value) {
