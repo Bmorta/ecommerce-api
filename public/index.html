@@ -220,7 +220,7 @@
   </dialog>
 
   <dialog class="form-dialog" id="productFormDialog">
-    <form id="productForm" class="product-form">
+    <form id="productForm" class="product-form" novalidate>
       <div class="form-header">
         <div>
           <span class="eyebrow" id="formEyebrow">NEW PRODUCT</span>
@@ -237,6 +237,8 @@
       </div>
 
       <input type="hidden" id="productId" />
+
+      <div class="form-error" id="productFormError" role="alert" aria-live="assertive" hidden></div>
 
       <div class="form-grid">
         <label class="form-field full-width">
@@ -277,7 +279,36 @@
     </form>
   </dialog>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog class="feedback-dialog" id="feedbackDialog">
+    <div class="feedback-content">
+      <div class="feedback-icon" id="feedbackIcon">
+        <i class="fa-solid fa-circle-info"></i>
+      </div>
+      <h2 id="feedbackTitle">Notice</h2>
+      <p id="feedbackMessage"></p>
+      <button class="primary-button feedback-button" id="feedbackCloseButton" type="button">
+        OK
+      </button>
+    </div>
+  </dialog>
+
+  <dialog class="confirm-dialog" id="confirmDialog">
+    <div class="feedback-content">
+      <div class="feedback-icon danger-feedback-icon">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h2>Delete product?</h2>
+      <p id="confirmMessage"></p>
+      <div class="confirm-actions">
+        <button class="secondary-button" id="confirmCancelButton" type="button">
+          Cancel
+        </button>
+        <button class="danger-button" id="confirmDeleteButton" type="button">
+          Delete
+        </button>
+      </div>
+    </div>
+  </dialog>
 
   <footer class="site-footer">
     <p>ShopEase • Capstone 2 E-Commerce REST API</p>
