@@ -24,6 +24,25 @@ const productDialog = document.getElementById("productDialog");
 const dialogContent = document.getElementById("dialogContent");
 const closeDialogButton = document.getElementById("closeDialogButton");
 const toast = document.getElementById("toast");
+const manageProductsButton = document.getElementById("manageProductsButton");
+const manageDialog = document.getElementById("manageDialog");
+const closeManageButton = document.getElementById("closeManageButton");
+const openAddProductButton = document.getElementById("openAddProductButton");
+const manageProductList = document.getElementById("manageProductList");
+const manageSummary = document.getElementById("manageSummary");
+const productFormDialog = document.getElementById("productFormDialog");
+const closeProductFormButton = document.getElementById("closeProductFormButton");
+const cancelProductFormButton = document.getElementById("cancelProductFormButton");
+const productForm = document.getElementById("productForm");
+const formEyebrow = document.getElementById("formEyebrow");
+const productFormTitle = document.getElementById("productFormTitle");
+const productId = document.getElementById("productId");
+const productName = document.getElementById("productName");
+const productDescription = document.getElementById("productDescription");
+const productPrice = document.getElementById("productPrice");
+const productStock = document.getElementById("productStock");
+const productCategory = document.getElementById("productCategory");
+const saveProductText = document.getElementById("saveProductText");
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -52,6 +71,25 @@ function bindEvents() {
 
   productDialog.addEventListener("close", () => {
     dialogContent.innerHTML = "";
+  });
+
+  manageProductsButton.addEventListener("click", openManageProducts);
+  closeManageButton.addEventListener("click", closeManageProducts);
+  openAddProductButton.addEventListener("click", openAddProductForm);
+  closeProductFormButton.addEventListener("click", closeProductForm);
+  cancelProductFormButton.addEventListener("click", closeProductForm);
+  productForm.addEventListener("submit", handleProductFormSubmit);
+
+  manageDialog.addEventListener("click", (event) => {
+    if (event.target === manageDialog) {
+      closeManageProducts();
+    }
+  });
+
+  productFormDialog.addEventListener("click", (event) => {
+    if (event.target === productFormDialog) {
+      closeProductForm();
+    }
   });
 }
 
@@ -152,7 +190,6 @@ function renderProducts() {
 }
 
 function createProductCard(product) {
-  const image = getProductImage(product);
   const stock = Number(product.stock) || 0;
   const inStock = stock > 0;
 
@@ -208,7 +245,6 @@ function openProductDialog(productId) {
   }
 
   const stock = Number(product.stock) || 0;
-  const image = getProductImage(product);
 
   dialogContent.innerHTML = `
     <div class="dialog-layout">
@@ -458,18 +494,6 @@ function saveCart() {
   localStorage.setItem("shopease-cart", JSON.stringify(state.cart));
 }
 
-function getProductImage(product) {
-  if (
-    product &&
-    typeof product.imageUrl === "string" &&
-    product.imageUrl.trim()
-  ) {
-    return product.imageUrl.trim();
-  }
-
-  return "";
-}
-
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -518,4 +542,224 @@ function showToast(message) {
   toastTimer = window.setTimeout(() => {
     toast.classList.remove("visible");
   }, 2200);
+}
+
+
+async function openManageProducts() {
+  renderManageProducts();
+  if (typeof manageDialog.showModal === "function") {
+    manageDialog.showModal();
+  } else {
+    manageDialog.setAttribute("open", "");
+  }
+}
+
+function closeManageProducts() {
+  if (typeof manageDialog.close === "function" && manageDialog.open) {
+    manageDialog.close();
+  } else {
+    manageDialog.removeAttribute("open");
+  }
+}
+
+function renderManageProducts() {
+  manageSummary.textContent = `${state.products.length} ${state.products.length === 1 ? "product" : "products"}`;
+
+  if (!state.products.length) {
+    manageProductList.innerHTML = `
+      <div class="manage-empty">
+        <i class="fa-solid fa-box-open"></i>
+        <h3>No products yet</h3>
+        <p>Add your first product to the catalog.</p>
+      </div>
+    `;
+    return;
+  }
+
+  manageProductList.innerHTML = state.products.map((product) => `
+    <article class="manage-product-row">
+      <div class="manage-product-icon">
+        <i class="fa-solid fa-box"></i>
+      </div>
+
+      <div class="manage-product-details">
+        <strong>${escapeHtml(product.name || "Unnamed product")}</strong>
+        <span>${escapeHtml(product.category || "General")} • ${formatCurrency(product.price)} • ${Number(product.stock) || 0} in stock</span>
+      </div>
+
+      <div class="manage-product-actions">
+        <button
+          class="secondary-button compact-button"
+          type="button"
+          data-edit-product="${escapeAttribute(product._id)}"
+        >
+          <i class="fa-regular fa-pen-to-square"></i>
+          Edit
+        </button>
+
+        <button
+          class="danger-button"
+          type="button"
+          data-delete-product="${escapeAttribute(product._id)}"
+        >
+          <i class="fa-regular fa-trash-can"></i>
+          Delete
+        </button>
+      </div>
+    </article>
+  `).join("");
+
+  manageProductList.querySelectorAll("[data-edit-product]").forEach((button) => {
+    button.addEventListener("click", () => {
+      openEditProductForm(button.dataset.editProduct);
+    });
+  });
+
+  manageProductList.querySelectorAll("[data-delete-product]").forEach((button) => {
+    button.addEventListener("click", () => {
+      deleteProduct(button.dataset.deleteProduct);
+    });
+  });
+}
+
+function openAddProductForm() {
+  productForm.reset();
+  productId.value = "";
+  formEyebrow.textContent = "NEW PRODUCT";
+  productFormTitle.textContent = "Add product";
+  saveProductText.textContent = "Save Product";
+  openProductFormDialog();
+}
+
+function openEditProductForm(id) {
+  const product = state.products.find((item) => item._id === id);
+
+  if (!product) {
+    showToast("Product not found.");
+    return;
+  }
+
+  productId.value = product._id;
+  productName.value = product.name || "";
+  productDescription.value = product.description || "";
+  productPrice.value = Number(product.price) || 0;
+  productStock.value = Number(product.stock) || 0;
+  productCategory.value = product.category || "";
+
+  formEyebrow.textContent = "UPDATE PRODUCT";
+  productFormTitle.textContent = "Edit product";
+  saveProductText.textContent = "Update Product";
+
+  openProductFormDialog();
+}
+
+function openProductFormDialog() {
+  if (typeof productFormDialog.showModal === "function") {
+    productFormDialog.showModal();
+  } else {
+    productFormDialog.setAttribute("open", "");
+  }
+}
+
+function closeProductForm() {
+  if (typeof productFormDialog.close === "function" && productFormDialog.open) {
+    productFormDialog.close();
+  } else {
+    productFormDialog.removeAttribute("open");
+  }
+}
+
+async function handleProductFormSubmit(event) {
+  event.preventDefault();
+
+  const id = productId.value.trim();
+  const payload = {
+    name: productName.value.trim(),
+    description: productDescription.value.trim(),
+    price: Number(productPrice.value),
+    category: productCategory.value.trim(),
+    stock: Number(productStock.value)
+  };
+
+  if (
+    !payload.name ||
+    !payload.description ||
+    !payload.category ||
+    Number.isNaN(payload.price) ||
+    Number.isNaN(payload.stock) ||
+    payload.price < 0 ||
+    payload.stock < 0
+  ) {
+    showToast("Please complete all product fields correctly.");
+    return;
+  }
+
+  const isUpdate = Boolean(id);
+
+  try {
+    const response = await fetch(
+      isUpdate ? `${API_BASE}/${encodeURIComponent(id)}` : API_BASE,
+      {
+        method: isUpdate ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Unable to save product.");
+    }
+
+    closeProductForm();
+    await loadProducts();
+    renderManageProducts();
+    showToast(isUpdate ? "Product updated successfully." : "Product added successfully.");
+  } catch (error) {
+    showToast(error.message || "Unable to save product.");
+  }
+}
+
+async function deleteProduct(id) {
+  const product = state.products.find((item) => item._id === id);
+
+  if (!product) {
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Delete "${product.name}"? This action cannot be undone.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Unable to delete product.");
+    }
+
+    state.cart = state.cart.filter((item) => item.id !== id);
+    saveCart();
+
+    await loadProducts();
+    renderManageProducts();
+    renderCart();
+    showToast("Product deleted successfully.");
+  } catch (error) {
+    showToast(error.message || "Unable to delete product.");
+  }
 }
