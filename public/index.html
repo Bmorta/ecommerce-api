@@ -39,13 +39,36 @@
         </button>
       </nav>
 
-      <button class="cart-button" id="cartButton" type="button" aria-label="Open cart">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span>Cart</span>
-        <span class="cart-count" id="cartCount">0</span>
-      </button>
+      <div class="header-actions">
+        <button class="cart-button" id="cartButton" type="button" aria-label="Open cart">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span>Cart</span>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+
+        <button
+          class="menu-toggle"
+          id="menuToggle"
+          type="button"
+          aria-label="Open navigation menu"
+          aria-expanded="false"
+          aria-controls="mobileMenu"
+        >
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
     </div>
   </header>
+
+
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <a href="#products">Products</a>
+    <a href="#featured">Featured</a>
+    <button class="mobile-manage-button" id="mobileManageProductsButton" type="button">
+      <i class="fa-solid fa-boxes-stacked"></i>
+      Manage Products
+    </button>
+  </div>
 
   <main>
     <section class="hero" id="featured">
